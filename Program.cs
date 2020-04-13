@@ -29,14 +29,10 @@ namespace SilvercityEtsyService
                 var request = new RestRequest(Method.GET);
                 IRestResponse response = client.Execute(request);
                 shopListing = JsonConvert.DeserializeObject<ShopListings>(response.Content);
-                if (shopListing.count != null && shopListing.count > 0)
+                if (shopListing.count != null && shopListing.count > 0 && shopListing.results.Count>0)
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.listing_id == 727693605)
-                        {
-
-                        }
                         if (listingItem.sku.Count > 0)
                         {
 
