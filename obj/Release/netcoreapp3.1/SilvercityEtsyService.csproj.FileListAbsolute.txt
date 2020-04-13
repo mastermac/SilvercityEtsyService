@@ -10,3 +10,8 @@ C:\wamp64\www\SilvercityEtsyService\obj\Release\netcoreapp3.1\SilvercityEtsyServ
 C:\wamp64\www\SilvercityEtsyService\obj\Release\netcoreapp3.1\SilvercityEtsyService.AssemblyInfo.cs
 C:\wamp64\www\SilvercityEtsyService\obj\Release\netcoreapp3.1\SilvercityEtsyService.dll
 C:\wamp64\www\SilvercityEtsyService\obj\Release\netcoreapp3.1\SilvercityEtsyService.pdb
+C:\wamp64\www\SilvercityEtsyService\bin\Release\netcoreapp3.1\Newtonsoft.Json.dll
+C:\wamp64\www\SilvercityEtsyService\bin\Release\netcoreapp3.1\RestSharp.dll
+C:\wamp64\www\SilvercityEtsyService\bin\Release\netcoreapp3.1\System.Interactive.dll
+C:\wamp64\www\SilvercityEtsyService\bin\Release\netcoreapp3.1\TinyOAuth1.dll
+C:\wamp64\www\SilvercityEtsyService\obj\Release\netcoreapp3.1\SilvercityEtsyService.csproj.CopyComplete

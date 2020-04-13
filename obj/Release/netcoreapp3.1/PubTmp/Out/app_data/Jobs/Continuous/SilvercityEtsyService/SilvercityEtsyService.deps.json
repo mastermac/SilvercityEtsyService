@@ -7,8 +7,46 @@
   "targets": {
     ".NETCoreApp,Version=v3.1": {
       "SilvercityEtsyService/1.0.0": {
+        "dependencies": {
+          "Newtonsoft.Json": "12.0.3",
+          "RestSharp": "106.10.1",
+          "System.Interactive": "4.1.1",
+          "TinyOAuth1": "1.1.0"
+        },
         "runtime": {
           "SilvercityEtsyService.dll": {}
+        }
+      },
+      "Newtonsoft.Json/12.0.3": {
+        "runtime": {
+          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+            "assemblyVersion": "12.0.0.0",
+            "fileVersion": "12.0.3.23909"
+          }
+        }
+      },
+      "RestSharp/106.10.1": {
+        "runtime": {
+          "lib/netstandard2.0/RestSharp.dll": {
+            "assemblyVersion": "106.0.0.0",
+            "fileVersion": "106.10.1.0"
+          }
+        }
+      },
+      "System.Interactive/4.1.1": {
+        "runtime": {
+          "lib/netstandard2.0/System.Interactive.dll": {
+            "assemblyVersion": "4.1.0.0",
+            "fileVersion": "4.1.1.36654"
+          }
+        }
+      },
+      "TinyOAuth1/1.1.0": {
+        "runtime": {
+          "lib/netstandard2.0/TinyOAuth1.dll": {
+            "assemblyVersion": "1.1.0.0",
+            "fileVersion": "1.1.0.0"
+          }
         }
       }
     }
@@ -18,6 +56,34 @@
       "type": "project",
       "serviceable": false,
       "sha512": ""
+    },
+    "Newtonsoft.Json/12.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
+      "path": "newtonsoft.json/12.0.3",
+      "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
+    },
+    "RestSharp/106.10.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-MhR4w8LbArVaRA5T/oAR3ZnF852QXtDXRBO84GsvyYzsm7FsjXHJ+JaM8x/nR/B/OCB1WbolGH7hqMT1GZpNJw==",
+      "path": "restsharp/106.10.1",
+      "hashPath": "restsharp.106.10.1.nupkg.sha512"
+    },
+    "System.Interactive/4.1.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pL6aZm6Im/KSpQADvJMr3sK5d/Q/iQbC4TQ2zQfiDZ+qzAskuMgrtgnCheAwLX1vC5YDTXpXnVjeMzfxUZzfjQ==",
+      "path": "system.interactive/4.1.1",
+      "hashPath": "system.interactive.4.1.1.nupkg.sha512"
+    },
+    "TinyOAuth1/1.1.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0rJ3SX4HtNiuKbRVLT9z8MvKHN5439633gSKg46HoQdU7nyFlCUZ1zJIpJ//WEiBj572wKMIM8Cd0iq4kURXGw==",
+      "path": "tinyoauth1/1.1.0",
+      "hashPath": "tinyoauth1.1.1.0.nupkg.sha512"
     }
   }
 }
