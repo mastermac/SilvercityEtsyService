@@ -41,12 +41,12 @@ namespace SilvercityEtsyService
             return Convert.ToInt64(ts.TotalSeconds).ToString();
         }
 
-        public static string GetAuthorizationHeaderValue(Uri uri, string productConfig)
+        public static string GetAuthorizationHeaderValue(Uri uri, string productConfig, string reqType="PUT")
         {
             var nonce = GetNonce();
             var timeStamp = GetTimeStamp();
 
-            var signature = GenerateSignature(uri, "PUT", consumerKey, consumerSecret, nonce, timeStamp, OAuthSignatureGenerator.SignatureMethod.HmacSha1, accessToken, accessTokenSecret, "1.0", productConfig);
+            var signature = GenerateSignature(uri, reqType, consumerKey, consumerSecret, nonce, timeStamp, OAuthSignatureGenerator.SignatureMethod.HmacSha1, accessToken, accessTokenSecret, "1.0", productConfig);
             var requestParametersForHeader = new List<string>
             {
                 "oauth_consumer_key=\"" + consumerKey + "\"",
