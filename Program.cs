@@ -14,12 +14,11 @@ namespace SilvercityEtsyService
         static string getDataStart = "0\":";
         static int pageLimit = 100;
         private static int pollingTime = 1000 * 60 * 60 * 24; //Every 24 Hours
-
+        public static int requestCounter = 0;
         static void Main(string[] args)
         {
             int pageNo = 1;
-            Console.WriteLine("Hello World!");
-            Console.WriteLine(DateTime.Now);
+            Console.WriteLine("Starting Application @ "+DateTime.Now);
             //sampleUpdateAsync();
             var client = new RestClient();
             ShopListings shopListing = new ShopListings();
@@ -28,6 +27,7 @@ namespace SilvercityEtsyService
                 client.BaseUrl = new System.Uri("https://openapi.etsy.com/v2/shops/maahira/listings/active?api_key=3ptctueuc44gh9e3sny1oix5&limit=" + pageLimit + "&page=" + pageNo++);
                 var request = new RestRequest(Method.GET);
                 IRestResponse response = client.Execute(request);
+                CheckRequestThrottleLimit();
                 shopListing = JsonConvert.DeserializeObject<ShopListings>(response.Content);
                 if (shopListing.count != null && shopListing.count > 0 && shopListing.results.Count>0)
                 {
@@ -39,18 +39,24 @@ namespace SilvercityEtsyService
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
                             IRestResponse response1 = client1.Execute(request1);
+                            CheckRequestThrottleLimit();
                             if (response1.Content.Contains(getDataStart))
                             {
                                 int startInd = response1.Content.IndexOf(getDataStart);
                                 string substr = response1.Content.Substring(startInd + getDataStart.Length);
                                 ItemData stockItem = new ItemData();
                                 stockItem = JsonConvert.DeserializeObject<ItemData>(substr.Substring(0, substr.IndexOf("}") + 1));
-                                if (int.Parse(stockItem.curStock) != listingItem.quantity || double.Parse(listingItem.price) != double.Parse(stockItem.sellPrice))
+                                if(listingItem.state=="edit" && int.Parse(stockItem.curStock) > 0)
+                                {
+                                    changeInventoryState(listingItem.listing_id, "active");
+                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock);
+                                }
+                                else if (int.Parse(stockItem.curStock) != listingItem.quantity || double.Parse(listingItem.price) != double.Parse(stockItem.sellPrice))
                                 {
                                     if (int.Parse(stockItem.curStock) > 0)
                                         updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock);
-                                    else
-                                        Console.WriteLine("Stock is empty for ItemNo: " + stockItem.itemNo + " with listing Id: " + listingItem.listing_id);
+                                    else if(listingItem.state!="edit")
+                                        changeInventoryState(listingItem.listing_id,"inactive");
                                 }
                             }
                         }
@@ -64,13 +70,30 @@ namespace SilvercityEtsyService
                 }
             }
         }
-
+        static void CheckRequestThrottleLimit()
+        {
+            requestCounter++;
+            if(requestCounter%4==0)
+                Thread.Sleep(1000);
+            requestCounter %= 4;
+        }
+        static void changeInventoryState(int listingId, string state)
+        {
+            var client = new RestClient("https://openapi.etsy.com/v2/listings/"+listingId+"?state="+state);
+            var request = new RestRequest(Method.PUT);
+            request.AddHeader("Authorization", "OAuth "+ OAuthSignatureGenerator.GetAuthorizationHeaderValue(new Uri("https://openapi.etsy.com/v2/listings/" + listingId + "?state="+state), ""));
+            IRestResponse response = client.Execute(request);
+            CheckRequestThrottleLimit();
+            Console.WriteLine("Stock is empty for listing Id: " + listingId+". Hence, Deactivated!");
+            //Console.WriteLine(response.Content);
+        }
         static void updateInventory(int listingId, string sellPrice, string currentQty)
         {
             var client = new RestClient();
             client.BaseUrl = new Uri("https://openapi.etsy.com/v2/listings/" + listingId + "/inventory?api_key=3ptctueuc44gh9e3sny1oix5&write_missing_inventory=true");
             var request = new RestRequest(Method.GET);
             IRestResponse response = client.Execute(request);
+            CheckRequestThrottleLimit();
             try
             {
                 var inventoryVariations = JsonConvert.DeserializeObject<GetInventory>(response.Content);
@@ -93,7 +116,9 @@ namespace SilvercityEtsyService
                     request1.AddParameter("products", JsonConvert.SerializeObject(updateInventoryList));
 
                     IRestResponse response1 = client1.Execute(request1);
-                    Console.WriteLine(response1.Content);
+                    CheckRequestThrottleLimit();
+                    Console.WriteLine("Stock Item is Updated with Listing ID: " + listingId);
+                    //Console.WriteLine(response1.Content);
                 }
             }
             catch (Exception e)

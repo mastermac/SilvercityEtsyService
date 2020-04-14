@@ -83,14 +83,18 @@ namespace SilvercityEtsyService
             AddParameter(parameters, OAuthNonce, nonce);
             AddParameter(parameters, OAuthSignatureMethod, "HMAC-SHA1");
             AddParameter(parameters, OAuthTimestamp, timestamp);
-            AddParameter(parameters, "products", productValue);
+            if(!String.IsNullOrEmpty(productValue))
+                AddParameter(parameters, "products", productValue);
             if (!string.IsNullOrEmpty(token)) AddParameter(parameters, OAuthToken, token);
             if (!string.IsNullOrWhiteSpace(version)) AddParameter(parameters, OAuthVersion, version);
             parameters.Sort((x, y) => x.Key == y.Key ? string.Compare(x.Value, y.Value) : string.Compare(x.Key, y.Key));
 
             var normalizedUrl = string.Format("{0}://{1}{2}{3}", uri.Scheme, uri.Host, (uri.Scheme == "http" && uri.Port == 80) || (uri.Scheme == "https" && uri.Port == 443) ? null : ":" + uri.Port, uri.AbsolutePath);
-            parameters.RemoveAt(parameters.Count - 1);
-            parameters.Add(new KeyValuePair<string, string>("products", SpecialUrlEncode(productValue)));
+            if (!String.IsNullOrEmpty(productValue))
+            {
+                parameters.RemoveAt(parameters.Count - 1);
+                parameters.Add(new KeyValuePair<string, string>("products", SpecialUrlEncode(productValue)));
+            }
             var normalizedRequestParameters = string.Join(null, parameters.Select(x => "&" + x.Key + "=" + x.Value)).TrimStart('&');
 
             var signatureData = string.Format("{0}&{1}&{2}", httpMethod.ToUpper(), UrlEncode(normalizedUrl), UrlEncode(normalizedRequestParameters).Replace("%5C",""));
