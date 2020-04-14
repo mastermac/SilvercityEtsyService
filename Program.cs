@@ -84,7 +84,7 @@ namespace SilvercityEtsyService
             request.AddHeader("Authorization", "OAuth "+ OAuthSignatureGenerator.GetAuthorizationHeaderValue(new Uri("https://openapi.etsy.com/v2/listings/" + listingId + "?state="+state), ""));
             IRestResponse response = client.Execute(request);
             CheckRequestThrottleLimit();
-            Console.WriteLine("Stock is empty for listing Id: " + listingId+". Hence, Deactivated!");
+            Console.WriteLine("Changing State to "+state+" for listing Id: " + listingId);
             //Console.WriteLine(response.Content);
         }
         static void updateInventory(int listingId, string sellPrice, string currentQty)
