@@ -21,6 +21,7 @@ namespace SilvercityEtsyService
             //sampleUpdateAsync();
             while (true)
             {
+                PollSoldOutListings();
                 PollExpiredListings();
                 PollInActiveListings();
                 PollActiveListings();
@@ -184,6 +185,56 @@ namespace SilvercityEtsyService
             }
             Console.WriteLine();
             Console.WriteLine("Expired State Polling Done");
+        }
+        static void PollSoldOutListings()
+        {
+            Console.WriteLine();
+            Console.WriteLine("SoldOut State Polling Started");
+            int pageNo = 1;
+            while (true)
+            {
+                var client = new RestClient();
+                Transactions transactions = new Transactions();
+                client.BaseUrl = new System.Uri("https://openapi.etsy.com/v2/shops/maahira/transactions?includes=Listing&limit=" + pageLimit + "&page=" + pageNo++);
+                var request = new RestRequest(Method.GET);
+                request.AddHeader("Authorization", "OAuth " + OAuthSignatureGenerator.GetAuthorizationHeaderValue(client.BaseUrl, "", "GET"));
+                IRestResponse response = client.Execute(request);
+                CheckRequestThrottleLimit();
+                transactions = JsonConvert.DeserializeObject<Transactions>(response.Content);
+                if (transactions.count != null && transactions.count > 0 && transactions.results.Count > 0)
+                {
+                    foreach (TransactionDetails transaction in transactions.results)
+                    {
+                        if (transaction.Listing.sku.Count > 0 && !String.IsNullOrEmpty(transaction.Listing.state) && transaction.Listing.state=="sold_out")
+                        {
+                            var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + transaction.Listing.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
+                            var request1 = new RestRequest(Method.GET);
+                            IRestResponse response1 = client1.Execute(request1);
+                            CheckRequestThrottleLimit();
+                            if (response1.Content.Contains(getDataStart))
+                            {
+                                int startInd = response1.Content.IndexOf(getDataStart);
+                                string substr = response1.Content.Substring(startInd + getDataStart.Length);
+                                ItemData stockItem = new ItemData();
+                                stockItem = JsonConvert.DeserializeObject<ItemData>(substr.Substring(0, substr.IndexOf("}") + 1));
+                                if (int.Parse(stockItem.curStock) > 0)
+                                {
+                                    changeInventoryState(transaction.Listing.listing_id, "active");
+                                    updateInventory(transaction.Listing.listing_id, stockItem.sellPrice, stockItem.curStock);
+                                }
+                            }
+                        }
+                    }
+                    Console.WriteLine("Done for Page " + (pageNo - 1) + " @ " + DateTime.Now);
+                }
+                else
+                {
+                    pageNo = 1;
+                    break;
+                }
+            }
+            Console.WriteLine();
+            Console.WriteLine("Sold Out State Polling Done");
         }
         static void CheckRequestThrottleLimit()
         {
