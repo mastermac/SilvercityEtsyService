@@ -63,14 +63,14 @@ namespace SilvercityEtsyService
                                 if (listingItem.state == "edit" && int.Parse(stockItem.curStock) > 0)
                                 {
                                     changeInventoryState(listingItem.listing_id, "active");
-                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock);
+                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock, stockItem.itemNo);
                                 }
                                 else if (int.Parse(stockItem.curStock) != listingItem.quantity || double.Parse(listingItem.price) != double.Parse(stockItem.sellPrice))
                                 {
-                                    if (int.Parse(stockItem.curStock) > 0)
-                                        updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock);
-                                    else if (listingItem.state != "edit")
-                                        changeInventoryState(listingItem.listing_id, "inactive");
+                                        if (int.Parse(stockItem.curStock) > 0)
+                                            updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock, stockItem.itemNo);
+                                        else if (listingItem.state != "edit")
+                                            changeInventoryState(listingItem.listing_id, "inactive");
                                 }
                             }
                         }
@@ -120,7 +120,7 @@ namespace SilvercityEtsyService
                                 if (int.Parse(stockItem.curStock) > 0)
                                 {
                                     changeInventoryState(listingItem.listing_id, "active");
-                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock);
+                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock, stockItem.itemNo);
                                 }
                             }
                         }
@@ -170,7 +170,7 @@ namespace SilvercityEtsyService
                                 if (int.Parse(stockItem.curStock) > 0)
                                 {
                                     changeInventoryState(listingItem.listing_id, "active");
-                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock);
+                                    updateInventory(listingItem.listing_id, stockItem.sellPrice, stockItem.curStock, stockItem.itemNo);
                                 }
                             }
                         }
@@ -220,7 +220,7 @@ namespace SilvercityEtsyService
                                 if (int.Parse(stockItem.curStock) > 0)
                                 {
                                     changeInventoryState(transaction.Listing.listing_id, "active");
-                                    updateInventory(transaction.Listing.listing_id, stockItem.sellPrice, stockItem.curStock);
+                                    updateInventory(transaction.Listing.listing_id, stockItem.sellPrice, stockItem.curStock, stockItem.itemNo);
                                 }
                             }
                         }
@@ -256,7 +256,7 @@ namespace SilvercityEtsyService
             Console.WriteLine("Changing State to "+state+" for listing Id: " + listingId);
             //Console.WriteLine(response.Content);
         }
-        static void updateInventory(int listingId, string sellPrice, string currentQty)
+        static void updateInventory(int listingId, string sellPrice, string currentQty, string sku)
         {
             var client = new RestClient();
             client.BaseUrl = new Uri("https://openapi.etsy.com/v2/listings/" + listingId + "/inventory?api_key=3ptctueuc44gh9e3sny1oix5&write_missing_inventory=true");
@@ -275,6 +275,7 @@ namespace SilvercityEtsyService
                     updateInventory.offerings[0].offering_id = inventoryVariations.results.products[0].offerings[0].offering_id;
                     updateInventory.offerings[0].price = sellPrice;
                     updateInventory.offerings[0].quantity = int.Parse(currentQty);
+                    updateInventory.sku = sku;
                     updateInventoryList.Add(updateInventory);
 
                     var client1 = new RestClient("https://openapi.etsy.com/v2/listings/" + listingId + "/inventory");

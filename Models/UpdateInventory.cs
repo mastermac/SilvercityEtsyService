@@ -6,6 +6,7 @@ namespace SilvercityEtsyService.Models
 {
     public class UpdateInventory
     {
+        public string sku { get; set; }
         public long product_id { get; set; }
         public List<object> property_values { get; set; } = new List<object>();
         public List<UpdateOffering> offerings { get; set; } = new List<UpdateOffering>();
