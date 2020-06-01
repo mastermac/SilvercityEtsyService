@@ -25,10 +25,22 @@ namespace SilvercityEtsyService
                 PollExpiredListings();
                 PollInActiveListings();
                 PollActiveListings();
-                Thread.Sleep(pollingTime);
+                preventIdlingOut();
             }
         }
-
+        static void preventIdlingOut()
+        {
+            int totalTime = 0;
+            int idleTime = 1000 * 60 * 15;
+            while (true)
+            {
+                totalTime += idleTime;
+                if (totalTime >= pollingTime)
+                    break;
+                Thread.Sleep(idleTime);
+                for (int i = 0; i < 10000; i++);
+            }
+        }
         static void PollActiveListings()
         {
             Console.WriteLine();
