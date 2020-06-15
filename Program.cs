@@ -21,10 +21,10 @@ namespace SilvercityEtsyService
             //sampleUpdateAsync();
             while (true)
             {
+                PollActiveListings();
                 PollSoldOutListings();
                 PollExpiredListings();
                 PollInActiveListings();
-                PollActiveListings();
                 preventIdlingOut();
             }
         }
@@ -60,7 +60,7 @@ namespace SilvercityEtsyService
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.sku.Count > 0)
+                        if (listingItem.sku.Count == 1)
                         {
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
@@ -117,7 +117,7 @@ namespace SilvercityEtsyService
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.sku.Count > 0)
+                        if (listingItem.sku.Count == 1)
                         {
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
@@ -167,7 +167,7 @@ namespace SilvercityEtsyService
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.sku.Count > 0)
+                        if (listingItem.sku.Count == 1)
                         {
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
@@ -217,7 +217,7 @@ namespace SilvercityEtsyService
                 {
                     foreach (TransactionDetails transaction in transactions.results)
                     {
-                        if (transaction.Listing.sku.Count > 0 && !String.IsNullOrEmpty(transaction.Listing.state) && transaction.Listing.state=="sold_out")
+                        if (transaction.Listing.sku.Count == 1 && !String.IsNullOrEmpty(transaction.Listing.state) && transaction.Listing.state=="sold_out")
                         {
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + transaction.Listing.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
