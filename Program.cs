@@ -3,6 +3,7 @@ using RestSharp;
 using SilvercityEtsyService.Models;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading;
 using TinyOAuth1;
@@ -60,8 +61,14 @@ namespace SilvercityEtsyService
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.sku.Count == 1)
+                        if (IsSkuPresent(listingItem))
                         {
+                            //if (!listingItem.description.ToLower().Contains("sku"))
+                            //{
+                            //    updateDescriptionWithSku(listingItem);
+                            //    continue;
+                            //}
+                            //continue;
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
                             IRestResponse response1 = client1.Execute(request1);
@@ -98,6 +105,66 @@ namespace SilvercityEtsyService
             Console.WriteLine();
             Console.WriteLine("Active State Polling Done");
         }
+        static bool IsSkuPresent(Listing listing)
+        {
+            if (listing.sku.Count == 1)
+                return true;
+            else if (listing.sku.Count == 0)
+            {
+                if (listing.description.ToLower().Contains("sku"))
+                {
+                    int i = listing.description.ToLower().LastIndexOf("sku");
+                    string subDesc = listing.description.Substring(i);
+                    i = subDesc.IndexOf("|");
+                    subDesc = subDesc.Substring(i + 1);
+                    i = subDesc.IndexOf("|");
+                    listing.sku.Add(subDesc.Substring(0, i));
+                    return true;
+                }
+            }
+            return false;
+        }
+        static void updateDescriptionWithSku(Listing listing)
+        {
+            listing.description = listing.description+"\n\nSku: |" + listing.sku[0] + "|";
+            listing.description = EncodeSpecialChars(listing.description.Replace("&quot;",@""""));
+            //listing.description = listing.description.Replace("\r", "%0D%0A").Replace("\n", "%0D%0A");
+            //listing.description = listing.description.Replace("%", "%25").Replace(",", "%2C").Replace("*", "%2A").Replace("?", "%3F").Replace("\r", "%0D%0A").Replace("\n", "%0D%0A").Replace(":", "%3A");
+            var client = new RestClient(@"https://openapi.etsy.com/v2/listings/"+listing.listing_id+"?description="+listing.description);
+            var request = new RestRequest(Method.PUT);
+            request.AddHeader("Authorization", "OAuth " + OAuthSignatureGenerator.GetAuthorizationHeaderValue(client.BaseUrl, ""));
+            IRestResponse response = client.Execute(request);
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                Console.WriteLine(listing.url);
+            }
+            CheckRequestThrottleLimit();
+        }
+        static string EncodeSpecialChars(string s)
+        {
+            char[] specialChars = {'%',',','*','?',':','–','-','&'};
+            IDictionary<string, string> otherChars = new Dictionary<string, string>()
+                {
+                {">","%3E" },
+                {"$","%24" },
+                {"/","%2F" },
+                {"+","%2B" },
+                    {"&quot;","\"" },
+                    {"!","%21" },
+                    {"(","%28"},
+                    {")", "%29"},
+                    {"\"", "%22"},
+                    {"\r","%0D%0A"},
+                    {"\n","%0D%0A"},
+                };
+
+            foreach (var sc in specialChars)
+                s = s.Replace(sc.ToString(), System.Web.HttpUtility.UrlEncode(sc.ToString()).ToUpper());
+            foreach(var oc in otherChars)
+                s = s.Replace(oc.Key, oc.Value);
+
+            return s;
+        }
         static void PollInActiveListings()
         {
             Console.WriteLine();
@@ -117,8 +184,15 @@ namespace SilvercityEtsyService
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.sku.Count == 1)
+                        if (IsSkuPresent(listingItem))
                         {
+                            //if (!listingItem.description.ToLower().Contains("sku"))
+                            //{
+                            //    updateDescriptionWithSku(listingItem);
+                            //    continue;
+                            //}
+                            //continue;
+
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
                             IRestResponse response1 = client1.Execute(request1);
@@ -167,7 +241,7 @@ namespace SilvercityEtsyService
                 {
                     foreach (Listing listingItem in shopListing.results)
                     {
-                        if (listingItem.sku.Count == 1)
+                        if (IsSkuPresent(listingItem))
                         {
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + listingItem.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
@@ -217,7 +291,7 @@ namespace SilvercityEtsyService
                 {
                     foreach (TransactionDetails transaction in transactions.results)
                     {
-                        if (transaction.Listing.sku.Count == 1 && !String.IsNullOrEmpty(transaction.Listing.state) && transaction.Listing.state=="sold_out")
+                        if (IsSkuPresent(transaction.Listing) && !String.IsNullOrEmpty(transaction.Listing.state) && transaction.Listing.state=="sold_out")
                         {
                             var client1 = new RestClient("https://www.silvercityonline.com/stock/src/scripts/getData.php?perPage=50&page=1&itemNo=" + transaction.Listing.sku[0] + "&sdt=0000-00-00&edt=0000-00-00");
                             var request1 = new RestRequest(Method.GET);
